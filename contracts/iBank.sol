@@ -128,5 +128,7 @@ interface IBank {
      * @return - the value of the caller's balance with interest, excluding debts.
      */
     function getBalance(address token) view external returns (uint256);
+    
+    // testing in other contracts
 }
 ```
