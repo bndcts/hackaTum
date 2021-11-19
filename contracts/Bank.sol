@@ -3,8 +3,12 @@ import "./IBank.sol";
 
 contract Bank is IBank{
     string public name;
-    constructor(string memory _name) public {
-        name = _name;
+    address public token;
+    address public hak;
+    constructor(address _token, address _hak) public {
+        token = _token;
+        hak = _hak;
+        
     }
     
     
