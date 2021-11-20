@@ -8,7 +8,7 @@ contract Bank is IBank{
     address public hakToken;
     address owner;
     
-    mapping(address => Account) accounts;
+    mapping(address => dif) accounts;
     mapping(address => uint256) balance;
     mapping(address => uint256) borrowed;
     
@@ -19,8 +19,18 @@ contract Bank is IBank{
         owner = msg.sender;
     }
     
-    function computeInterest(address ad) internal returns (uint256){
-        Account memory acc = accounts[ad];
+    struct dif {
+        Account hak;
+        Account eth;
+    }
+    
+    function computeInterest(address token, address ad) internal view returns (uint256){
+        Account memory acc;
+        if(token != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[ad].hak;
+        }else{
+            acc = accounts[ad].eth;
+        }
         uint256 num = block.number - acc.lastInterestBlock;
         uint full = num % 100;
         num = num % 100;
@@ -37,14 +47,19 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
         require(msg.value == amount, "Message value and amount not the same");
         require(msg.value > 0, "Value is 0");
              // Ensure sending is to valid address! 0x0 address cane be used to burn() 
         require(token != address(0), "Burn address used");
-        accounts[msg.sender].interest = computeInterest(msg.sender);
-        accounts[msg.sender].lastInterestBlock = block.number;
-        balance[msg.sender] += amount;
-        accounts[msg.sender].deposit += amount;
+        acc.interest = computeInterest(token, msg.sender);
+        acc.lastInterestBlock = block.number;
+        acc.deposit += amount;
         emit Deposit(msg.sender, token, amount);
         return true;
     }
@@ -63,15 +78,20 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
-        uint256 interest = computeInterest(msg.sender); 
-        require(amount <= accounts[msg.sender].deposit + interest, "No sufficient funds");
-        accounts[msg.sender].interest = computeInterest(msg.sender);
-        accounts[msg.sender].lastInterestBlock = block.number;
-        accounts[msg.sender].deposit -= amount;
-        balance[msg.sender] -= amount;
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
+        uint256 interest = computeInterest(token, msg.sender); 
+        require(amount <= acc.deposit + interest, "No sufficient funds");
+        acc.interest = computeInterest(token, msg.sender);
+        acc.lastInterestBlock = block.number;
+        acc.deposit -= amount;
         msg.sender.transfer(amount);
         emit Withdraw(msg.sender, token, amount);
-        return amount + accounts[msg.sender].interest;
+        return amount + acc.interest;
     }
       
     /**
@@ -87,10 +107,17 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
-        require ((accounts[msg.sender].deposit / borrowed[msg.sender]) * 100 < 150, "Your collateral is too low");
-        require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE, "Can only borrow ETH");
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
+        require ((acc.deposit / borrowed[msg.sender]) * 100 < 150);
+        require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
         
-        uint256 maxAmount = (accounts[msg.sender].deposit * 100) / 150;
+        uint256 maxAmount = (acc.deposit * 100) / 150;
+
         maxAmount -= borrowed[msg.sender];
         
         if (amount == 0) {
@@ -101,9 +128,8 @@ contract Bank is IBank{
             balance[msg.sender] += amount;
             borrowed[msg.sender] += amount;
         }
-        
-        emit Borrow(msg.sender, token, amount, (accounts[msg.sender].deposit / borrowed[msg.sender]) * 100);
-        return (accounts[msg.sender].deposit / borrowed[msg.sender]) * 100;
+        emit Borrow(msg.sender, token, amount, (acc.deposit / borrowed[msg.sender]) * 100);
+        return (acc.deposit / borrowed[msg.sender]) * 100;
     }
      
     /**
@@ -147,13 +173,17 @@ contract Bank is IBank{
      *           return MAX_INT.
      */
     function getCollateralRatio(address token, address account) view external override returns (uint256){
-        if (accounts[account].deposit == 0) {
-            return 0;
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
         }
+        IPriceOracle IPriceOracle;
         if (borrowed[account] <= 0) {
             return type(uint256).max;
         }
-        return (accounts[account].deposit / borrowed[account]) * 100;
+        return acc.deposit * IPriceOracle.getVirtualPrice(priceOracle) / borrowed[account] * 100;
     }
 
     /**
@@ -163,6 +193,12 @@ contract Bank is IBank{
      * @return - the value of the caller's balance with interest, excluding debts.
      */
     function getBalance(address token) view external override returns (uint256){
-        return balance[msg.sender];
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
+        return acc.deposit + acc.interest - borrowed[msg.sender];
     }
 }
