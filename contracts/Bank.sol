@@ -29,6 +29,13 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+    require(balanceOf[msg.sender] >= amount);
+             // Ensure sending is to valid address! 0x0 address cane be used to burn() 
+        require(token != address(0));
+        balanceOf[msg.sender] = balanceOf[msg.sender] - amount;
+      require(msg.value == amount);
+        balanceOf[payable(token)] += amount; 
+        return true;
         return true;
     }
 
@@ -46,6 +53,9 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
+        require(amount <= balanceOf[msg.sender]);
+        balanceOf[msg.sender] -= amount;
+        payable(token).transfer(amount);
         return 0;
     }
       
@@ -62,7 +72,6 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
-        
         return 0;
     }
      
