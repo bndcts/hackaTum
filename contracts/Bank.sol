@@ -17,7 +17,7 @@ contract Bank is IBank{
     constructor(address _priceOracle, address _hakToken) public {
         priceOracle = _priceOracle;
         hakToken = _hakToken;
-        owner = msg.sender
+        owner = msg.sender;
     }
     
     
