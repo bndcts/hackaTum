@@ -5,10 +5,15 @@ contract Bank is IBank{
     string public name;
     address public token;
     address public hak;
+    address[] public allAccounts;
+    
+    mapping(address => Account) accounts;
+    mapping(address => uint256) balance;
+    mapping(address => uint256) borrowed;
+    
     constructor(address _token, address _hak) public {
         token = _token;
         hak = _hak;
-        
     }
     
     
@@ -99,7 +104,13 @@ contract Bank is IBank{
      *           return MAX_INT.
      */
     function getCollateralRatio(address token, address account) view external override returns (uint256){
-        return 0;
+        if (accounts[account].deposit == 0) {
+            return 0;
+        }
+        if (borrowed[account] <= 0) {
+            return type(uint256).max;
+        }
+        return accounts[account].deposit / borrowed[account];
     }
 
     /**
@@ -109,6 +120,6 @@ contract Bank is IBank{
      * @return - the value of the caller's balance with interest, excluding debts.
      */
     function getBalance(address token) view external override returns (uint256){
-        return 0;
+        return balance[msg.sender];
     }
 }

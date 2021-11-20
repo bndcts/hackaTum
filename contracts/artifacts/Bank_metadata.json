@@ -1,0 +1,517 @@
+{
+	"compiler": {
+		"version": "0.7.0+commit.9e61f92b"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_hak",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "newCollateralRatio",
+						"type": "uint256"
+					}
+				],
+				"name": "Borrow",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Deposit",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "liquidator",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "accountLiquidated",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "collateralToken",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amountOfCollateral",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amountSentBack",
+						"type": "uint256"
+					}
+				],
+				"name": "Liquidate",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "remainingDebt",
+						"type": "uint256"
+					}
+				],
+				"name": "Repay",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "_from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Withdraw",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "allAccounts",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "borrow",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "deposit",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "getBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "getCollateralRatio",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "hak",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "liquidate",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "name",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "repay",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "token",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "withdraw",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"borrow(address,uint256)": {
+					"params": {
+						"amount": "- the amount to borrow. If this amount is set to zero (0),                 then the amount borrowed should be the maximum allowed,                  while respecting the collateral ratio of 150%.",
+						"token": "- the address of the token to borrow. This address must be                set to 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE, otherwise                  the transaction must revert."
+					},
+					"returns": {
+						"_0": "- the current collateral ratio."
+					}
+				},
+				"deposit(address,uint256)": {
+					"params": {
+						"amount": "- the amount of the given token to deposit.",
+						"token": "- the address of the token to deposit. If this address is                set to 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE then                 the token to deposit is ETH."
+					},
+					"returns": {
+						"_0": "- true if the deposit was successful, otherwise revert."
+					}
+				},
+				"getBalance(address)": {
+					"params": {
+						"token": "- the address of the token for which the balance is computed."
+					},
+					"returns": {
+						"_0": "- the value of the caller's balance with interest, excluding debts."
+					}
+				},
+				"getCollateralRatio(address,address)": {
+					"params": {
+						"account": "- the account that took out the loan.",
+						"token": "- the address of the deposited token used a collateral for the loan. "
+					},
+					"returns": {
+						"_0": "- the value of the collateral ratio with 2 percentage decimals, e.g. 1% = 100.           If the account has no deposits for the given token then return zero (0).           If the account has deposited token, but has not borrowed anything then            return MAX_INT."
+					}
+				},
+				"liquidate(address,address)": {
+					"params": {
+						"account": "- the account that took out the loan that is now undercollateralized.",
+						"token": "- the address of the token used as collateral for the loan. "
+					},
+					"returns": {
+						"_0": "- true if the liquidation was successful, otherwise revert."
+					}
+				},
+				"repay(address,uint256)": {
+					"params": {
+						"amount": "- the amount to repay including the interest.",
+						"token": "- the address of the token to repay. If this address is                set to 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE then                 the token is ETH."
+					},
+					"returns": {
+						"_0": "- the amount still left to pay for this loan, excluding interest."
+					}
+				},
+				"withdraw(address,uint256)": {
+					"params": {
+						"amount": "- the amount of the given token to withdraw. If this param                 is set to 0, then the maximum amount available in the                  caller's account should be withdrawn.",
+						"token": "- the address of the token to withdraw. If this address is                set to 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE then                 the token to withdraw is ETH."
+					},
+					"returns": {
+						"_0": "- the amount that was withdrawn plus interest upon success,            otherwise revert."
+					}
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"borrow(address,uint256)": {
+					"notice": "The purpose of this function is to allow users to borrow funds by using their  deposited funds as collateral. The minimum ratio of deposited funds over  borrowed funds must not be less than 150%."
+				},
+				"deposit(address,uint256)": {
+					"notice": "The purpose of this function is to allow end-users to deposit a given  token amount into their bank account."
+				},
+				"getBalance(address)": {
+					"notice": "The purpose of this function is to return the balance that the caller  has in their own account for the given token (including interest)."
+				},
+				"getCollateralRatio(address,address)": {
+					"notice": "The purpose of this function is to return the collateral ratio for any account. The collateral ratio is computed as the value deposited divided by the value borrowed. However, if no value is borrowed then the function should return  uint256 MAX_INT = type(uint256).max"
+				},
+				"liquidate(address,address)": {
+					"notice": "The purpose of this function is to allow so called keepers to collect bad debt, that is in case the collateral ratio goes below 150% for any loan. "
+				},
+				"repay(address,uint256)": {
+					"notice": "The purpose of this function is to allow users to repay their loans. Loans can be repaid partially or entirely. When replaying a loan, an interest payment is also required. The interest on a loan is equal to 5% of the amount lent per 100 blocks. If the loan is repaid earlier, or later then the interest should be proportional to the number of  blocks that the amount was borrowed for."
+				},
+				"withdraw(address,uint256)": {
+					"notice": "The purpose of this function is to allow end-users to withdraw a given  token amount from their bank account. Upon withdrawal, the user must automatically receive a 3% interest rate per 100 blocks on their deposit."
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Bank.sol": "Bank"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/Bank.sol": {
+			"keccak256": "0xdce8be0bea1f23bb90a5982f653541eefd1febbcacff49b94b867d6d70c9258b",
+			"urls": [
+				"bzz-raw://f00d759a05410deacbe7277499284e0d4cf4ea4389e95c3e19862e129c61ddca",
+				"dweb:/ipfs/QmWGQ6G1TYnWMLcaMvwPXEKG9P15TCXrLpSSvrhsMPXezb"
+			]
+		},
+		"contracts/IBank.sol": {
+			"keccak256": "0xa2c6ff38bc3c0fe261b927e97fdd26ae46e1842916686ff14fa7e097756105ff",
+			"urls": [
+				"bzz-raw://b34ad5f41e67a4279eeaf4c37568372b5ecb4bc470cb917879501d040d889c1d",
+				"dweb:/ipfs/Qmd3hS3i7v2ob7ciJ6N4bDnf1hEmDX96igxgqeujp7mMaK"
+			]
+		}
+	},
+	"version": 1
+}
