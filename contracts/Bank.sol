@@ -1,17 +1,18 @@
 pragma solidity 0.7.0;
-import "./IBank.sol";
+import "./interfaces/IBank.sol";
+import "./interfaces/IPriceOracle.sol";
 
 contract Bank is IBank{
     string public name;
-    address public token;
-    address public hak;
+    address public priceOracle;
+    address public hakToken;
     address[] public allAccounts;
     
     mapping(address => Account) accounts;
     
-    constructor(address _token, address _hak) public {
-        token = _token;
-        hak = _hak;
+    constructor(address _priceOracle, address _hakToken) public {
+        priceOracle = _priceOracle;
+        hakToken = _hakToken;
         
     }
     
