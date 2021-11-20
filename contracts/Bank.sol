@@ -34,11 +34,15 @@ contract Bank is IBank{
         }else{
             acc = accounts[ad].eth;
         }
-        uint256 num = block.number - acc.lastInterestBlock;
-        uint full = num % 100;
-        num = num % 100;
-        uint decimal = (num * 3);
-        return acc.interest + (acc.deposit*full)/100 + ((acc.deposit*decimal) / 10000);
+        if(acc.lastInterestBlock == 0){
+            return 0;
+        }else{
+            uint256 num = block.number - acc.lastInterestBlock;
+            uint full = num % 100;
+            num = num % 100;
+            uint decimal = (num * 3);
+            return acc.interest + (acc.deposit*full)/100 + ((acc.deposit*decimal) / 10000);
+        }
     }
     
     function computeOwedInterest(address ad) internal{
@@ -163,6 +167,7 @@ contract Bank is IBank{
             borrowed[msg.sender] += amount;
         }
         computeOwedInterest(msg.sender);
+        owedInterestLastBlock[msg.sender] = block.number;
         emit Borrow(msg.sender, token, amount, (hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100);
         return (hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100;
     }
@@ -184,7 +189,19 @@ contract Bank is IBank{
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
-        return 0;
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
+        computeOwedInterest(msg.sender);
+        require(amount <= borrowed[msg.sender] + owedInterest[msg.sender], "Wants to repay more than debt");
+        borrowed[msg.sender] = borrowed[msg.sender] + owedInterest[msg.sender] - amount;
+        owedInterestLastBlock[msg.sender] = block.number;
+        computeOwedInterest;
+        emit Repay(msg.sender, token, owedInterest[msg.sender]);
+        return owedInterest[msg.sender];
     }
      
     /**
