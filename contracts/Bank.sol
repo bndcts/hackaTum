@@ -12,6 +12,8 @@ contract Bank is IBank{
     mapping(address => bool) accountExists;
     mapping(address => uint256) balance;
     mapping(address => uint256) borrowed;
+    mapping(address => uint256) owedInterest;
+    mapping(address => uint256) owedInterestLastBlock;
     
     
     constructor(address _priceOracle, address _hakToken) public {
@@ -35,13 +37,27 @@ contract Bank is IBank{
         uint256 num = block.number - acc.lastInterestBlock;
         uint full = num % 100;
         num = num % 100;
-        uint decimal = num * 3;
-        return acc.interest + acc.deposit*full + ((acc.deposit*decimal) / 100);
+        uint decimal = (num * 3);
+        return acc.interest + (acc.deposit*full)/100 + ((acc.deposit*decimal) / 10000);
+    }
+    
+    function computeOwedInterest(address ad) internal{
+        if(owedInterestLastBlock[ad] == 0) {
+            owedInterest[ad] == 0;
+        }else{
+            uint256 num = block.number - owedInterestLastBlock[ad];
+            uint full = num % 100;
+            num = num % 100;
+            uint decimal = (num * 5);
+            owedInterest[ad] = owedInterest[ad] + (borrowed[ad]*full)/100 + (borrowed[ad]*decimal) / 10000;
+        }
     }
     
     function createAccount(address ad) internal{
         accounts[ad] = dif(Account(0, 0, 0), Account(0, 0, 0));
         accountExists[ad] = true;
+        owedInterest[ad] = 0;
+        owedInterestLastBlock[ad] = 0;
     }
     /**
      * The purpose of this function is to allow end-users to deposit a given 
@@ -119,6 +135,7 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
+        IPriceOracle IPriceOracle;
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
@@ -128,23 +145,26 @@ contract Bank is IBank{
         }else{
             acc = accounts[msg.sender].hak;
         }
-        require ((acc.deposit / borrowed[msg.sender]) * 100 < 150);
+        uint256 hakInEth = ((accounts[msg.sender].hak.deposit + accounts[msg.sender].hak.interest) * IPriceOracle.getVirtualPrice(priceOracle));
+        computeOwedInterest(msg.sender);
         require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+        require ((hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100 > 150);
         
-        uint256 maxAmount = (acc.deposit * 100) / 150;
+        uint256 maxAmount = (hakInEth * 100) / 150;
         maxAmount -= borrowed[msg.sender];
         
         if (amount == 0) {
             balance[msg.sender] += maxAmount;
             borrowed[msg.sender] += maxAmount;
+            amount = maxAmount;
         }
         else {
             balance[msg.sender] += amount;
             borrowed[msg.sender] += amount;
         }
-        
-        emit Borrow(msg.sender, token, amount, (acc.deposit / borrowed[msg.sender]) * 100);
-        return (acc.deposit / borrowed[msg.sender]) * 100;
+        computeOwedInterest(msg.sender);
+        emit Borrow(msg.sender, token, amount, (hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100);
+        return (hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100;
     }
      
     /**
@@ -204,7 +224,7 @@ contract Bank is IBank{
         if (borrowed[account] <= 0) {
             return type(uint256).max;
         }
-        return acc.deposit * IPriceOracle.getVirtualPrice(priceOracle) / borrowed[account] * 100;
+        return (acc.deposit + acc.interest * IPriceOracle.getVirtualPrice(priceOracle) / (borrowed[msg.sender] + owedInterest[msg.sender]) ) * 100;
     }
 
     /**
@@ -220,6 +240,6 @@ contract Bank is IBank{
         }else{
             acc = accounts[msg.sender].hak;
         }
-        return acc.deposit + acc.interest - borrowed[msg.sender];
+        return acc.deposit + acc.interest - borrowed[msg.sender] - owedInterest[msg.sender];
     }
 }
