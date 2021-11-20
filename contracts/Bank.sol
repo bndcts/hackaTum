@@ -54,7 +54,10 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
-        return 0;
+        require(amount <= balanceOf[msg.sender]);
+        balance[msg.sender] -= amount;
+        payable(token).transfer(amount);
+        return true;
     }
       
     /**
