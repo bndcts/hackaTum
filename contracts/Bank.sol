@@ -60,6 +60,7 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
+        
         return 0;
     }
      
@@ -110,7 +111,7 @@ contract Bank is IBank{
         if (borrowed[account] <= 0) {
             return type(uint256).max;
         }
-        return accounts[account].deposit / borrowed[account];
+        return (accounts[account].deposit / borrowed[account]) * 100;
     }
 
     /**

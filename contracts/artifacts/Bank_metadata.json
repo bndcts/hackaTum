@@ -499,10 +499,10 @@
 	},
 	"sources": {
 		"contracts/Bank.sol": {
-			"keccak256": "0xdce8be0bea1f23bb90a5982f653541eefd1febbcacff49b94b867d6d70c9258b",
+			"keccak256": "0x97b0b569b120268b071906963abdf005a40ddec430df454c6b6a8d771b27344d",
 			"urls": [
-				"bzz-raw://f00d759a05410deacbe7277499284e0d4cf4ea4389e95c3e19862e129c61ddca",
-				"dweb:/ipfs/QmWGQ6G1TYnWMLcaMvwPXEKG9P15TCXrLpSSvrhsMPXezb"
+				"bzz-raw://f49eb560cc50d1d907014d21490ecf94237047ccb5ea5e3e092d45b7f2be628f",
+				"dweb:/ipfs/QmWeSV5DHfx6xJTAEyA31Y6PLjz4wHknMxutvjySWk7XLV"
 			]
 		},
 		"contracts/IBank.sol": {
