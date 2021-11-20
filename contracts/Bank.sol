@@ -9,6 +9,7 @@ contract Bank is IBank{
     address owner;
     
     mapping(address => dif) accounts;
+    mapping(address => bool) accountExists;
     mapping(address => uint256) balance;
     mapping(address => uint256) borrowed;
     
@@ -37,7 +38,12 @@ contract Bank is IBank{
         uint decimal = num * 3;
         return acc.interest + acc.deposit*full + ((acc.deposit*decimal) / 100);
     }
-     /**
+    
+    function createAccount(address ad) internal{
+        accounts[ad] = dif(Account(0, 0, 0), Account(0, 0, 0));
+        accountExists[ad] = true;
+    }
+    /**
      * The purpose of this function is to allow end-users to deposit a given 
      * token amount into their bank account.
      * @param token - the address of the token to deposit. If this address is
@@ -47,6 +53,9 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+        if(!accountExists[msg.sender]) {
+            createAccount(msg.sender);
+        }
         Account memory acc;
         if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             acc = accounts[msg.sender].eth;
@@ -78,6 +87,9 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
+        if(!accountExists[msg.sender]) {
+            createAccount(msg.sender);
+        }
         Account memory acc;
         if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             acc = accounts[msg.sender].eth;
@@ -107,6 +119,9 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
+        if(!accountExists[msg.sender]) {
+            createAccount(msg.sender);
+        }
         Account memory acc;
         if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             acc = accounts[msg.sender].eth;
@@ -146,6 +161,9 @@ contract Bank is IBank{
      * @return - the amount still left to pay for this loan, excluding interest.
      */
     function repay(address token, uint256 amount) payable external override returns (uint256){
+        if(!accountExists[msg.sender]) {
+            createAccount(msg.sender);
+        }
         return 0;
     }
      
@@ -157,6 +175,9 @@ contract Bank is IBank{
      * @return - true if the liquidation was successful, otherwise revert.
      */
     function liquidate(address token, address account) payable external override returns (bool){
+        if(!accountExists[msg.sender]) {
+            createAccount(msg.sender);
+        }
         return true;
     }
  
