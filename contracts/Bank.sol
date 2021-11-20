@@ -152,7 +152,7 @@ contract Bank is IBank{
         uint256 hakInEth = ((accounts[msg.sender].hak.deposit + accounts[msg.sender].hak.interest) * IPriceOracle.getVirtualPrice(priceOracle));
         computeOwedInterest(msg.sender);
         require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
-        require ((hakInEth / (borrowed[msg.sender] + owedInterest[msg.sender])) * 100 > 150);
+        require ((hakInEth * 10000 / (borrowed[msg.sender] + owedInterest[msg.sender])) >= 15000);
         
         uint256 maxAmount = (hakInEth * 100) / 150;
         maxAmount -= borrowed[msg.sender];
@@ -215,6 +215,21 @@ contract Bank is IBank{
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
+        Account memory acc;
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            acc = accounts[msg.sender].eth;
+        }else{
+            acc = accounts[msg.sender].hak;
+        }
+        IPriceOracle IPriceOracle;
+        uint256 hakInEth = ((accounts[msg.sender].hak.deposit + accounts[msg.sender].hak.interest) * IPriceOracle.getVirtualPrice(priceOracle));
+        computeOwedInterest(msg.sender);
+        require ((hakInEth * 10000 / (borrowed[msg.sender] + owedInterest[msg.sender])) < 15000);
+        borrowed[account] = 0;
+        uint256 amountCol = accounts[account].hak.deposit;
+        accounts[msg.sender].hak.deposit += accounts[account].hak.deposit;
+        accounts[account].hak.deposit = 0;
+        emit Liquidate(msg.sender, account, token, amountCol, msg.value-amountCol);
         return true;
     }
  
@@ -241,7 +256,7 @@ contract Bank is IBank{
         if (borrowed[account] <= 0) {
             return type(uint256).max;
         }
-        return (acc.deposit + acc.interest * IPriceOracle.getVirtualPrice(priceOracle) / (borrowed[msg.sender] + owedInterest[msg.sender]) ) * 100;
+        return (acc.deposit + acc.interest * IPriceOracle.getVirtualPrice(priceOracle)  / (borrowed[msg.sender] + owedInterest[msg.sender]) ) * 100;
     }
 
     /**
