@@ -1,19 +1,23 @@
 pragma solidity 0.7.0;
+//SPDX-License-Identifier: UNLICENSED"
 import "./interfaces/IBank.sol";
 import "./interfaces/IPriceOracle.sol";
 
 contract Bank is IBank{
-    string public name;
     address public priceOracle;
     address public hakToken;
+    address owner;
     address[] public allAccounts;
     
     mapping(address => Account) accounts;
+    mapping(address => uint256) balance;
+    mapping(address => uint256) borrowed;
+    
     
     constructor(address _priceOracle, address _hakToken) public {
         priceOracle = _priceOracle;
         hakToken = _hakToken;
-        
+        owner = msg.sender
     }
     
     
@@ -27,12 +31,18 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+        require(msg.value == amount);
+        require(msg.value > 0);
+             // Ensure sending is to valid address! 0x0 address cane be used to burn() 
+        require(token != address(0));
+        balance[msg.sender] += amount;
+        allAccounts[msg.sender].deposit += amount;
         return true;
     }
 
     /**
      * The purpose of this function is to allow end-users to withdraw a given 
-     * token amount from their bank account. Upon withdrawal, the user must
+     * token amount from theirm  bank account. Upon withdrawal, the user must
      * automatically receive a 3% interest rate per 100 blocks on their deposit.
      * @param token - the address of the token to withdraw. If this address is
      *                set to 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE then 
@@ -104,7 +114,13 @@ contract Bank is IBank{
      *           return MAX_INT.
      */
     function getCollateralRatio(address token, address account) view external override returns (uint256){
-        return 0;
+        if (accounts[account].deposit == 0) {
+            return 0;
+        }
+        if (borrowed[account] <= 0) {
+            return type(uint256).max;
+        }
+        return (accounts[account].deposit / borrowed[account]) * 100;
     }
 
     /**
@@ -114,6 +130,6 @@ contract Bank is IBank{
      * @return - the value of the caller's balance with interest, excluding debts.
      */
     function getBalance(address token) view external override returns (uint256){
-        return 0;
+        return balance[msg.sender];
     }
 }
