@@ -73,6 +73,7 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+        require(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE || token == hakToken, "token not supported");
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
@@ -82,10 +83,10 @@ contract Bank is IBank{
         }else{
             acc = accounts[msg.sender].hak;
         }
-        require(msg.value == amount, "Message value and amount not the same");
-        require(msg.value > 0, "Value is 0");
-             // Ensure sending is to valid address! 0x0 address cane be used to burn() 
-        require(token != address(0), "Burn address used");
+        if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            require(msg.value == amount, "Message value and amount not the same");
+            require(msg.value > 0, "Value is 0");
+        }
         acc.interest = computeInterest(token, msg.sender);
         acc.lastInterestBlock = block.number;
         acc.deposit += amount;
@@ -107,22 +108,21 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
-        if(!accountExists[msg.sender]) {
-            createAccount(msg.sender);
-        }
+        require(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE || token == hakToken, "token not supported");
+        require(accountExists[msg.sender] == true, "no balance");
         Account memory acc;
         if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             acc = accounts[msg.sender].eth;
         }else{
             acc = accounts[msg.sender].hak;
         }
-        uint256 interest = computeInterest(token, msg.sender); 
-        require(amount <= acc.deposit + interest, "No sufficient funds");
+        uint256 interest = computeInterest(token, msg.sender);
+        require(amount <= acc.deposit + interest, "amount exceeds balance");
         acc.interest = computeInterest(token, msg.sender);
         acc.lastInterestBlock = block.number;
         acc.deposit -= amount;
         msg.sender.transfer(amount);
-        emit Withdraw(msg.sender, token, amount);
+        emit Withdraw(msg.sender, token, amount+ acc.interest);
         return amount + acc.interest;
     }
       
