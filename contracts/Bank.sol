@@ -1,8 +1,10 @@
 pragma solidity 0.7.0;
-import "./IBank.sol";
+import "./interfaces/IBank.sol";
+import "./interfaces/IPriceOracle.sol";
 
 contract Bank is IBank{
     string public name;
+
     address public token;
     address public hak;
     address[] public allAccounts;
@@ -10,10 +12,10 @@ contract Bank is IBank{
     mapping(address => Account) accounts;
     mapping(address => uint256) balance;
     mapping(address => uint256) borrowed;
-    
-    constructor(address _token, address _hak) public {
-        token = _token;
-        hak = _hak;
+   
+    constructor(address _priceOracle, address _hakToken) public {
+        priceOracle = _priceOracle;
+        hakToken = _hakToken;
     }
     
     
@@ -27,6 +29,13 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
+    require(balanceOf[msg.sender] >= amount);
+             // Ensure sending is to valid address! 0x0 address cane be used to burn() 
+        require(token != address(0));
+        balanceOf[msg.sender] = balanceOf[msg.sender] - amount;
+      require(msg.value == amount);
+        balanceOf[payable(token)] += amount; 
+        return true;
         return true;
     }
 
@@ -44,6 +53,9 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
+        require(amount <= balanceOf[msg.sender]);
+        balanceOf[msg.sender] -= amount;
+        payable(token).transfer(amount);
         return 0;
     }
       
