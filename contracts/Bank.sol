@@ -4,16 +4,18 @@ import "./interfaces/IPriceOracle.sol";
 
 contract Bank is IBank{
     string public name;
-    address public priceOracle;
-    address public hakToken;
+
+    address public token;
+    address public hak;
     address[] public allAccounts;
     
     mapping(address => Account) accounts;
-    
+    mapping(address => uint256) balance;
+    mapping(address => uint256) borrowed;
+   
     constructor(address _priceOracle, address _hakToken) public {
         priceOracle = _priceOracle;
         hakToken = _hakToken;
-        
     }
     
     
@@ -60,6 +62,7 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
+        
         return 0;
     }
      
@@ -104,7 +107,13 @@ contract Bank is IBank{
      *           return MAX_INT.
      */
     function getCollateralRatio(address token, address account) view external override returns (uint256){
-        return 0;
+        if (accounts[account].deposit == 0) {
+            return 0;
+        }
+        if (borrowed[account] <= 0) {
+            return type(uint256).max;
+        }
+        return (accounts[account].deposit / borrowed[account]) * 100;
     }
 
     /**
@@ -114,6 +123,6 @@ contract Bank is IBank{
      * @return - the value of the caller's balance with interest, excluding debts.
      */
     function getBalance(address token) view external override returns (uint256){
-        return 0;
+        return balance[msg.sender];
     }
 }
