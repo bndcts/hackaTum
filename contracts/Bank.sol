@@ -90,6 +90,13 @@ contract Bank is IBank{
         acc.interest = computeInterest(token, msg.sender);
         acc.lastInterestBlock = block.number;
         acc.deposit += amount;
+           if (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE){
+            accounts[msg.sender].eth = acc;
+        }
+        if (token == hakToken)
+        {
+            accounts[msg.sender].hak = acc;
+        }
         emit Deposit(msg.sender, token, amount);
         return true;
     }
