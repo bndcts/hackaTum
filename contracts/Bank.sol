@@ -5,6 +5,10 @@ contract Bank is IBank{
     string public name;
     address public token;
     address public hak;
+    address[] public allAccounts;
+    
+    mapping(address => Account) accounts;
+    
     constructor(address _token, address _hak) public {
         token = _token;
         hak = _hak;
