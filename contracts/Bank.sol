@@ -117,6 +117,7 @@ contract Bank is IBank{
         require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
         
         uint256 maxAmount = (acc.deposit * 100) / 150;
+
         maxAmount -= borrowed[msg.sender];
         
         if (amount == 0) {
@@ -127,7 +128,6 @@ contract Bank is IBank{
             balance[msg.sender] += amount;
             borrowed[msg.sender] += amount;
         }
-        
         emit Borrow(msg.sender, token, amount, (acc.deposit / borrowed[msg.sender]) * 100);
         return (acc.deposit / borrowed[msg.sender]) * 100;
     }
