@@ -7,7 +7,6 @@ contract Bank is IBank{
     address public priceOracle;
     address public hakToken;
     address owner;
-    address[] public allAccounts;
     
     mapping(address => Account) accounts;
     mapping(address => uint256) balance;
@@ -36,7 +35,7 @@ contract Bank is IBank{
              // Ensure sending is to valid address! 0x0 address cane be used to burn() 
         require(token != address(0));
         balance[msg.sender] += amount;
-        allAccounts[msg.sender].deposit += amount;
+        accounts[msg.sender].deposit += amount;
         return true;
     }
 
