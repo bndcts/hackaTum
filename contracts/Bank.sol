@@ -7,7 +7,6 @@ contract Bank is IBank{
     address public priceOracle;
     address public hakToken;
     address owner;
-    address[] public allAccounts;
     
     mapping(address => Account) accounts;
     mapping(address => uint256) balance;
@@ -17,10 +16,17 @@ contract Bank is IBank{
     constructor(address _priceOracle, address _hakToken) public {
         priceOracle = _priceOracle;
         hakToken = _hakToken;
-        owner = msg.sender
+        owner = msg.sender;
     }
     
-    
+    function computeInterest(address ad) internal returns (uint256){
+        Account memory acc = accounts[ad];
+        uint256 num = block.number - acc.lastInterestBlock;
+        uint full = num % 100;
+        num = num % 100;
+        uint decimal = num * 3;
+        return acc.interest + acc.deposit*full + ((acc.deposit*decimal) / 100);
+    }
      /**
      * The purpose of this function is to allow end-users to deposit a given 
      * token amount into their bank account.
@@ -35,8 +41,10 @@ contract Bank is IBank{
         require(msg.value > 0);
              // Ensure sending is to valid address! 0x0 address cane be used to burn() 
         require(token != address(0));
+        accounts[msg.sender].interest = computeInterest(msg.sender);
+        accounts[msg.sender].lastInterestBlock = block.number;
         balance[msg.sender] += amount;
-        allAccounts[msg.sender].deposit += amount;
+        accounts[msg.sender].deposit += amount;
         return true;
     }
 
@@ -54,7 +62,13 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
-        return 0;
+        uint256 interest = computeInterest(msg.sender); 
+        require(amount <= accounts[msg.sender].deposit + interest);
+        accounts[msg.sender].interest = computeInterest(msg.sender);
+        accounts[msg.sender].lastInterestBlock = block.number;
+        balance[msg.sender] -= amount;
+        payable(token).transfer(amount);
+        return accounts[msg.sender].deposit + accounts[msg.sender].interest;
     }
       
     /**
