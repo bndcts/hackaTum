@@ -90,13 +90,6 @@ contract Bank is IBank{
         acc.interest = computeInterest(token, msg.sender);
         acc.lastInterestBlock = block.number;
         acc.deposit += amount;
-        if (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE){
-            accounts[msg.sender].eth.deposit += amount;
-        }
-        if (token == hakToken)
-        {
-            accounts[msg.sender].hak.deposit += amount;
-        }
         emit Deposit(msg.sender, token, amount);
         return true;
     }
@@ -129,7 +122,7 @@ contract Bank is IBank{
         acc.lastInterestBlock = block.number;
         acc.deposit -= amount;
         msg.sender.transfer(amount);
-        emit Withdraw(msg.sender, token, amount+ acc.interest);
+        emit Withdraw(msg.sender, token, amount + acc.interest);
         return amount + acc.interest;
     }
       
@@ -147,9 +140,7 @@ contract Bank is IBank{
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
         IPriceOracle IPriceOracle;
-        if(!accountExists[msg.sender]) {
-            createAccount(msg.sender);
-        }
+        require(accountExists[msg.sender] == true, "no collateral deposited");
         Account memory acc;
         if(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             acc = accounts[msg.sender].eth;
@@ -159,7 +150,7 @@ contract Bank is IBank{
         uint256 hakInEth = ((accounts[msg.sender].hak.deposit + accounts[msg.sender].hak.interest) * IPriceOracle.getVirtualPrice(priceOracle));
         computeOwedInterest(msg.sender);
         require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
-        require ((hakInEth * 10000 / (borrowed[msg.sender] + owedInterest[msg.sender])) >= 15000);
+        require ((hakInEth * 10000 / (borrowed[msg.sender] + owedInterest[msg.sender])) >= 15000, "borrow would exceed collateral ratio");
 
         uint256 maxAmount = (hakInEth * 100) / 150;
         maxAmount -= borrowed[msg.sender];
@@ -193,6 +184,7 @@ contract Bank is IBank{
      * @return - the amount still left to pay for this loan, excluding interest.
      */
     function repay(address token, uint256 amount) payable external override returns (uint256){
+        require(token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE, "token not supported");
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
@@ -203,7 +195,7 @@ contract Bank is IBank{
             acc = accounts[msg.sender].hak;
         }
         computeOwedInterest(msg.sender);
-        require(amount <= borrowed[msg.sender] + owedInterest[msg.sender], "Wants to repay more than debt");
+        require(amount <= borrowed[msg.sender] + owedInterest[msg.sender], "nothing to repay");
         borrowed[msg.sender] = borrowed[msg.sender] + owedInterest[msg.sender] - amount;
         owedInterestLastBlock[msg.sender] = block.number;
         computeOwedInterest;
@@ -219,6 +211,8 @@ contract Bank is IBank{
      * @return - true if the liquidation was successful, otherwise revert.
      */
     function liquidate(address token, address account) payable external override returns (bool){
+        require(token == hakToken, "token not supported");
+        require(account != msg.sender, "cannot liquidate own position");
         if(!accountExists[msg.sender]) {
             createAccount(msg.sender);
         }
