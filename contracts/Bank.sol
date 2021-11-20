@@ -153,7 +153,7 @@ contract Bank is IBank{
         computeOwedInterest(msg.sender);
         require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
         require ((hakInEth * 10000 / (borrowed[msg.sender] + owedInterest[msg.sender])) >= 15000);
-        
+
         uint256 maxAmount = (hakInEth * 100) / 150;
         maxAmount -= borrowed[msg.sender];
         
