@@ -45,6 +45,7 @@ contract Bank is IBank{
         accounts[msg.sender].lastInterestBlock = block.number;
         balance[msg.sender] += amount;
         accounts[msg.sender].deposit += amount;
+        emit Deposit(msg.sender, token, amount);
         return true;
     }
 
@@ -69,6 +70,7 @@ contract Bank is IBank{
         accounts[msg.sender].deposit -= amount;
         balance[msg.sender] -= amount;
         msg.sender.transfer(amount);
+        emit Withdraw(msg.sender, token, amount);
         return amount + accounts[msg.sender].interest;
     }
       
