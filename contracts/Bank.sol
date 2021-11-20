@@ -8,6 +8,7 @@ contract Bank is IBank{
     address[] public allAccounts;
     
     mapping(address => Account) accounts;
+
     mapping(address => uint256) balance;
     mapping(address => uint256) borrowed;
     
