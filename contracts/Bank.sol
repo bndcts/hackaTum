@@ -19,7 +19,14 @@ contract Bank is IBank{
         owner = msg.sender;
     }
     
-    
+    function computeInterest(address ad) internal returns (uint256){
+        Account memory acc = accounts[ad];
+        uint256 num = block.number - acc.lastInterestBlock;
+        uint full = num % 100;
+        num = num % 100;
+        uint decimal = num * 3;
+        return acc.interest + acc.deposit*full + ((acc.deposit*decimal) / 100);
+    }
      /**
      * The purpose of this function is to allow end-users to deposit a given 
      * token amount into their bank account.
@@ -30,10 +37,12 @@ contract Bank is IBank{
      * @return - true if the deposit was successful, otherwise revert.
      */
     function deposit(address token, uint256 amount) payable external override returns (bool){
-        require(msg.value == amount);
-        require(msg.value > 0);
+        require(msg.value == amount, "Message value and amount not the same");
+        require(msg.value > 0, "Value is 0");
              // Ensure sending is to valid address! 0x0 address cane be used to burn() 
-        require(token != address(0));
+        require(token != address(0), "Burn address used");
+        accounts[msg.sender].interest = computeInterest(msg.sender);
+        accounts[msg.sender].lastInterestBlock = block.number;
         balance[msg.sender] += amount;
         accounts[msg.sender].deposit += amount;
         return true;
@@ -53,10 +62,14 @@ contract Bank is IBank{
      *           otherwise revert.
      */
     function withdraw(address token, uint256 amount) external override returns (uint256){
-        require(amount <= balance[msg.sender]);
+        uint256 interest = computeInterest(msg.sender); 
+        require(amount <= accounts[msg.sender].deposit + interest, "No sufficient funds");
+        accounts[msg.sender].interest = computeInterest(msg.sender);
+        accounts[msg.sender].lastInterestBlock = block.number;
+        accounts[msg.sender].deposit -= amount;
         balance[msg.sender] -= amount;
-        payable(token).transfer(amount);
-        return true;
+        msg.sender.transfer(amount);
+        return amount + accounts[msg.sender].interest;
     }
       
     /**
