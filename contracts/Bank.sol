@@ -87,8 +87,8 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
-        require ((accounts[msg.sender].deposit / borrowed[msg.sender]) * 100 < 150);
-        require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+        require ((accounts[msg.sender].deposit / borrowed[msg.sender]) * 100 < 150, "Your collateral is too low");
+        require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE, "Can only borrow ETH");
         
         uint256 maxAmount = (accounts[msg.sender].deposit * 100) / 150;
         maxAmount -= borrowed[msg.sender];
