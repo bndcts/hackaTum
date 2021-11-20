@@ -60,8 +60,23 @@ contract Bank is IBank{
      * @return - the current collateral ratio.
      */
     function borrow(address token, uint256 amount) external override returns (uint256){
+        require ((accounts[msg.sender].deposit / borrowed[msg.sender]) * 100 < 150);
+        require (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
         
-        return 0;
+        uint256 maxAmount = (accounts[msg.sender].deposit * 100) / 150;
+        maxAmount -= borrowed[msg.sender];
+        
+        if (amount == 0) {
+            balance[msg.sender] += maxAmount;
+            borrowed[msg.sender] += maxAmount;
+        }
+        else {
+            balance[msg.sender] += amount;
+            borrowed[msg.sender] += amount;
+        }
+        
+        emit Borrow(msg.sender, token, amount, (accounts[msg.sender].deposit / borrowed[msg.sender]) * 100);
+        return (accounts[msg.sender].deposit / borrowed[msg.sender]) * 100;
     }
      
     /**
